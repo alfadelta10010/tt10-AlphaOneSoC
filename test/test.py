@@ -5,17 +5,6 @@ import random
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, Timer
-
-# This hack (shouldn't be required) because it isn't easy to install requirements in the TT GitHub actions
-'''
-try:
-    from riscvmodel.insn import *
-except ImportError:
-    import sys
-    import subprocess
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "riscv-model"])
-    from riscvmodel.insn import *
-'''
 from riscvmodel.insn import *
 from riscvmodel.regnames import x0, x1, sp, gp, tp, a0, a1, a2, a3
 from riscvmodel.variant import RV32E
@@ -194,7 +183,7 @@ async def expect_load(dut, addr, val):
         await ClockCycles(dut.clk, 1)
         if dut.qspi_flash_select.value == 0:
             if hasattr(dut.user_project, "i_core"):
-                await start_read(dut, dut.user_project.i_tinyqv.instr_addr.value.integer * 2)
+                await start_read(dut, dut.user_project.i_core.instr_addr.value.integer * 2)
             else:
                 await start_read(dut, None)
             break
@@ -283,7 +272,7 @@ async def expect_store(dut, addr):
         await ClockCycles(dut.clk, 1)
         if dut.qspi_flash_select.value == 0:
             if hasattr(dut.user_project, "i_core"):
-                await start_read(dut, dut.user_project.i_tinyqv.instr_addr.value.integer * 2)
+                await start_read(dut, dut.user_project.i_core.instr_addr.value.integer * 2)
             else:
                 await start_read(dut, None)
             break
