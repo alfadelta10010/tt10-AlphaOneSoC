@@ -3,31 +3,35 @@
 
 # defaults
 SIM ?= icarus
+WAVES ?= 1
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES = *.v
+PROJECT_SOURCES = project.v tinyQV/cpu/*.v tinyQV/peri/uart/*.v tinyQV/peri/spi/*.v
 
 ifneq ($(GATES),yes)
+
 ifneq ($(SYNTH),yes)
+
 # RTL simulation:
-SIM_BUILD		= sim_build/rtl
-VERILOG_SOURCES 	+= $(addprefix $(SRC_DIR)/,$(PROJECT_SOURCES))
+SIM_BUILD				= sim_build/rtl
+VERILOG_SOURCES += $(addprefix $(SRC_DIR)/,$(PROJECT_SOURCES))
 COMPILE_ARGS 		+= -DSIM
 COMPILE_ARGS 		+= -I$(SRC_DIR)
+
 else
 
-# Gate level simulation:
-SIM_BUILD	= sim_build/gl
+SIM_BUILD				= sim_build/synth
 COMPILE_ARGS    += -DGL_TEST
 COMPILE_ARGS    += -DFUNCTIONAL
-COMPILE_ARGS    += -DUSE_POWER_PINS
 COMPILE_ARGS    += -DSIM
 COMPILE_ARGS    += -DUNIT_DELAY=\#1
 VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
 VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
 
-# this gets copied in by the GDS action workflow
-VERILOG_SOURCES += $(PWD)/gate_level_netlist.v
+NL ?= placement
+
+#VERILOG_SOURCES += ../runs/wokwi/results/synthesis/tt_um_MichaelBell_tinyQV.v
+VERILOG_SOURCES += ../runs/wokwi/results/$(NL)/tt_um_MichaelBell_tinyQV.nl.v
 
 endif
 
@@ -49,11 +53,8 @@ VERILOG_SOURCES += $(PWD)/gate_level_netlist.v
 
 endif
 
-# Allow sharing configuration between design and testbench via `include`:
-COMPILE_ARGS 		+= -I$(SRC_DIR)
-
 # Include the testbench sources:
-VERILOG_SOURCES += $(PWD)/tb.v
+VERILOG_SOURCES += $(PWD)/tb.v 
 TOPLEVEL = tb
 
 # MODULE is the basename of the Python test file
